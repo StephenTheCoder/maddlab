@@ -1,0 +1,46 @@
+__include__: [
+  './dfine_hgnetv2_l_coco.yml',
+  '../base/deim.yml'
+]
+
+output_dir: ./outputs/deim_hgnetv2_l_coco
+
+optimizer:
+  type: AdamW
+  params: 
+    - 
+      params: '^(?=.*backbone)(?!.*norm|bn).*$'
+      lr: 0.000025
+    - 
+      params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn)).*$'
+      weight_decay: 0.
+
+  lr: 0.0005
+  betas: [0.9, 0.999]
+  weight_decay: 0.0001
+  
+ema:
+  decay: 0.9998  # adjusted by 1 - (1 - decay) * 2
+  warmups: 250  # halved
+
+
+lr_warmup_scheduler:
+    warmup_duration: 250  # halved
+
+# Increase to search for the optimal ema
+epoches: 24 # 72 + 2n
+
+## Our LR-Scheduler
+flat_epoch: 12    # 4 + epoch // 2, e.g., 40 = 4 + 72 / 2
+no_aug_epoch: 4
+
+train_dataloader: 
+  dataset: 
+    transforms:
+      policy:
+        epoch: [2, 12, 20]   # list 
+
+  collate_fn:
+    mixup_epochs: [2, 15]  # list
+    stop_epoch: 22
+    base_size: 320
